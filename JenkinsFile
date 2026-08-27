@@ -4,6 +4,7 @@ pipeline {
     environment {
         NETLIFY_SITE_ID = 'e19a050a-321d-47c1-88a4-702f4210c978'
         NETLIFY_AUTH_TOKEN = credentials('Netlify-ID')
+        CI_ENVIRONMENT_URL= 
     }
 
     stages {
@@ -63,9 +64,7 @@ pipeline {
             }
             steps{
             sh '''
-            npm install serve
-            node_modules/.bin/serve -s build &
-            sleep 10
+            
             npx playwright test --reporter=list
             '''
             }
@@ -73,7 +72,7 @@ pipeline {
             post {
             always {
             
-            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Report', reportTitles: '', useWrapperFileDirectly: true])
+            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Local Report', reportTitles: '', useWrapperFileDirectly: true])
         }
         }
     }
@@ -116,7 +115,37 @@ pipeline {
 
                 '''
             }
-        }       
+        } 
+            stage('ProdE2E') {
+                agent {
+                    docker {
+                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                        reuseNode true
+                        args '-u root:root'
+                    }
+                }
+
+             environment {
+               
+                CI_ENVIRONMENT_URL = 'https://symphonious-creponne-13d97b.netlify.app'
+            }
+
+                steps{
+                sh '''
+                npm install serve
+                node_modules/.bin/serve -s build &
+                sleep 10
+                npx playwright test --reporter=list
+                '''
+                }
+
+                post {
+                always {
+                
+                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright e2e HTML Report', reportTitles: '', useWrapperFileDirectly: true])
+            }
+        }
+
      }
     
 }
