@@ -47,7 +47,7 @@ pipeline {
             }
             post {
         always {
-            junit 'results/junit.xml'
+            junit 'results/jest-junit.xml'
             
                }
           }
@@ -92,16 +92,7 @@ pipeline {
             steps {
                 
                 sh '''
-                  echo "===== DEPLOY STAGE ====="
-
-                    npm install netlify-cli
-                    node_modules/.bin/netlify --version
-                    echo "Deploying to production. Site ID: $NETLIFY_SITE_ID"
-                    node_modules/.bin/netlify status
-                    node_modules/.bin/netlify deploy --dir=build --prod
-
-                    echo "Deployment completed successfully!"
-
+                  
                 '''
             }
         } 
@@ -110,7 +101,38 @@ pipeline {
                     docker {
                     image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
                         reuseNode true
-            
+             sh '''
+            echo "========================================"
+            echo "          NETLIFY DEPLOYMENT"
+            echo "========================================"
+
+            echo "Checking build..."
+
+            test -f build/index.html
+
+            ls -la build
+
+            echo "Installing Netlify CLI..."
+
+            npm install netlify-cli
+
+            echo "Netlify CLI version:"
+
+            node_modules/.bin/netlify --version
+
+            echo "Deploying existing build to Netlify..."
+
+            node_modules/.bin/netlify deploy \
+                --dir=build \
+                --site="$NETLIFY_SITE_ID" \
+                --auth="$NETLIFY_AUTH_TOKEN" \
+                --prod \
+                --no-build
+
+            echo "========================================"
+            echo "       DEPLOYMENT SUCCESSFUL"
+            echo "========================================"
+        '''
                     }
                 }
 
