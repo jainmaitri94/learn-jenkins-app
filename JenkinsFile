@@ -101,7 +101,7 @@ pipeline {
                 
                 '''
                 script {
-                env.STAGING_URL = sh(script: "node_modules/.bin/node-jq -r '.deploy_url' Deploy-output.json" ,returnstout:true)
+                env.STAGING_URL = sh(script: "node_modules/.bin/node-jq -r '.deploy_url' Deploy-output.json" ,returnStdout:true)
                 }
             }   
         }
@@ -130,6 +130,7 @@ pipeline {
                     publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Staging E2E', reportTitles: '', useWrapperFileDirectly: true])
                 }
             }
+        }
          stage('Approval') {
             steps {
                 
@@ -137,7 +138,7 @@ pipeline {
                 
             }
         }
-        }
+        
 
         stage('Deploy') {
             agent {
