@@ -87,7 +87,7 @@ pipeline {
             }
 
             environment {
-                CI_ENVIRONMENT_URL = "${env.STAGING_URL}"
+                CI_ENVIRONMENT_URL = 'env to be set'
             }
 
             steps {
@@ -95,10 +95,7 @@ pipeline {
                 echo "======================================"
                 echo "STAGING URL:"
                 echo "$CI_ENVIRONMENT_URL"
-                echo "======================================"
-
-                echo "Testing URL with curl:"
-                curl -L -I "$CI_ENVIRONMENT_URL" || true
+                
 
                 echo "======================================"
                 echo "Running Playwright"
