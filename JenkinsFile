@@ -82,28 +82,8 @@ pipeline {
                 docker {
                     image 'node:18-alpine'
                     reuseNode true
-                }
-            }
-            steps {
-                sh '''
-                    npm install netlify-cli
-                    npm install node-jq
-                    node_modules/.bin/netlify --version
-                    echo "Deploying to Staging . Site ID: $NETLIFY_SITE_ID"
-                    node_modules/.bin/netlify status
-                    node_modules/.bin/netlify deploy \
-                    --dir=build \
-                    --json > Deploy-output.json \
-                    --site="$NETLIFY_SITE_ID" \
-                    --auth="$NETLIFY_AUTH_TOKEN" \
-                    --no-build
-                    
-                
-                '''
-                script {
-                env.STAGING_URL = sh(script: "node_modules/.bin/node-jq -r '.deploy_url' Deploy-output.json" ,returnStdout:true)
-                }
-            }   
+                }           }
+           
         }
     
     
@@ -132,6 +112,18 @@ pipeline {
                 echo "======================================"
                 echo "Running Playwright"
                 echo "======================================"
+                npm install netlify-cli
+                    npm install node-jq
+                    node_modules/.bin/netlify --version
+                    echo "Deploying to Staging . Site ID: $NETLIFY_SITE_ID"
+                    node_modules/.bin/netlify status
+                    node_modules/.bin/netlify deploy \
+                    --dir=build \
+                    --json > Deploy-output.json \
+                    --site="$NETLIFY_SITE_ID" \
+                    --auth="$NETLIFY_AUTH_TOKEN" \
+                    --no-build
+                CI_ENVIRONMENT_URL=$(node_modules/.bin/node-jq -r '.deploy_url' Deploy-output.json)
                 npx playwright test  --reporter=html
                 '''
             }
@@ -142,15 +134,8 @@ pipeline {
                 }
             }
         }
-         stage('Approval') {
-            steps {
-                
-                input message: 'Do you wish to deply to production?', ok: 'Yes, I am sure'
-                
-            }
-        }
+         
         
-
        
 
 
