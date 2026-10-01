@@ -95,7 +95,7 @@ pipeline {
         }
 
 
-        stage('Deploy staging') {
+       stage('Deploy staging') {
     agent {
         docker {
             image 'mcr.microsoft.com/playwright:v1.52.0-noble'
@@ -103,11 +103,8 @@ pipeline {
         }
     }
 
-    environment {
-        CI_ENVIRONMENT_URL = 'STAGING_URL_TO_BE_SET'
-    }
-
     steps {
+
         sh '''
             echo "======================================"
             echo "Environment"
@@ -125,7 +122,7 @@ pipeline {
             node_modules/.bin/netlify --version
 
             echo "======================================"
-            echo "Installing Playwright 1.39 Chromium"
+            echo "Installing Playwright Chromium"
             echo "======================================"
 
             npx playwright install chromium
@@ -151,7 +148,7 @@ pipeline {
         '''
 
         script {
-            env.CI_ENVIRONMENT_URL = sh(
+            def stagingUrl = sh(
                 script: "node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json",
                 returnStdout: true
             ).trim()
@@ -159,7 +156,10 @@ pipeline {
             echo "======================================"
             echo "STAGING URL"
             echo "======================================"
-            echo "${env.CI_ENVIRONMENT_URL}"
+
+            echo "${stagingUrl}"
+
+            env.CI_ENVIRONMENT_URL = stagingUrl
         }
 
         sh '''
@@ -186,8 +186,8 @@ pipeline {
                 reportTitles: '',
                 useWrapperFileDirectly: true
             ])
-                }
-            }
-         }
+        }
+    }
+}
     }
 }
